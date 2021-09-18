@@ -1,0 +1,55 @@
+import cv2
+
+
+# Numero de fotos que foram tiradas
+amostra = 1
+
+# Quantidade de fotos que serão salvas por pessoa
+numeroAmostras = 25
+
+# Identificador da pessoa
+# formato: pessoa.id.numerofoto.jpg
+id = input('Digite seu identificador: ')
+
+# padronizando o tamanho da imagem
+largura, altura = 220, 220
+
+print('Capturando as fotos')
+
+# frontal face detector
+classificador = cv2.CascadeClassifier('haarscascace_frontalface_default.xml')
+# selecionando a webcam como camera de captura
+camera = cv2.VideoCapture(0)
+
+while (True):
+    # frontal face detector
+    conectado, imagem = camera.read()
+    # convertendo a imagem para escala de cinza
+    imagemCinza = cv2.cvtColor(imagem, cv2.COLOR_RGB2GRAY)
+    # identificando a imagem no qual deseja-se detectar o rosto ja em escala de cinza
+    facesDetectadas = classificador.detectMultiScale(imagemCinza,
+                                                     scaleFactor=1.5, minSize=(150, 150))
+
+    # colocando um retangulo ao redor da imagem (x, y, largura, altura) da face
+    for (x, y, l, a) in facesDetectadas:
+        cv2.rectangle(imagem, (x, y), (x + l, y + a), (0, 0, 255), 2)
+
+        # aguardando precinamento da tecla 'q'
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            # codificação para salvar a foto
+            imagemFace = cv2.resize(imagemCinza[y:y + a, x:x + 1], (largura, altura))
+            cv2.imwrite('fotos/pessoa.' + str(id) + '.' + str(amostra) + 'jpg', imagemFace)
+            print('[foto' + str(amostra) + 'capturada com sucesso]')
+            amostra += 1
+
+    # mostrar a imagem que foi capturada pela camera
+    cv2.imshow('Face', imagem)
+    # aguardando o pressionamento de um botão
+    cv2.waitKey(1)
+    # Encerrando coleta de fotos
+    if amostra >= numeroAmostras + 1:
+        break
+# abrindo a camera
+camera.release()
+# liberando memoria
+cv2.destroyAllWindows()
